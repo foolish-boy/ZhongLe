@@ -16,3 +16,14 @@ KuGouSongs.py是爬取酷狗音乐的脚本。因为网易音乐、虾米音乐�
 ####维护
 目前有很多不完整不完全的地方，有时间继续优化！也欢迎大家拍砖，无论是功能设计、UI设计、代码设计模式上都可以提意见！
 
+####效果图
+![全部歌曲](http://upload-images.jianshu.io/upload_images/1136939-9834114f2220d970.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+![已下载歌曲](http://upload-images.jianshu.io/upload_images/1136939-a0580b934a0ea3df.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+![播放页面](http://upload-images.jianshu.io/upload_images/1136939-ffb3fc8a1d1978ad.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+![开始下载](http://upload-images.jianshu.io/upload_images/1136939-4a46f5454d1c66ab.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+![删除下载](http://upload-images.jianshu.io/upload_images/1136939-49825f5c6127e994.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
