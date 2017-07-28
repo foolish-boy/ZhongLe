@@ -44,17 +44,14 @@
         _player = nil;
         _isPlaying = false;
         _curPlayingSong = nil;
-        NSString *curSongId = [[NSUserDefaults standardUserDefaults] objectForKey:@"CurrentSong"];
-        ZLSongModel *song = [[ZLPlayingQueueManager sharedQueueManager] getSongById:curSongId];
-        if (song) {
-            _curPlayingSong = song;
-        }
+    
     }
     return self;
 }
 
-- (void)playSong:(NSString *)songId loadProgress:(loadProgressBlock)loadProgress playProgress:(playProgressBlock)playProgress {
-    if (!songId) {
+
+- (void)playSong:(ZLSongModel *)song loadProgress:(loadProgressBlock)loadProgress playProgress:(playProgressBlock)playProgress {
+    if (!song) {
         return;
     }
     
@@ -62,7 +59,7 @@
     _playingProgressBlock = playProgress;
     
     if (_curPlayingSong) {//有歌曲在播放/暂停
-        if ([_curPlayingSong.songId isEqualToString:songId]) {//当前播放/暂停 的歌曲就是本次要播放的
+        if ([_curPlayingSong.songId isEqualToString:song.songId]) {//当前播放/暂停 的歌曲就是本次要播放的
             if (_isPlaying) {//正在播放 不做操作
                 // do nothing
                 return;
@@ -70,51 +67,40 @@
                 [self continuePlaying];
             }
         } else { //切换播放新歌曲
-            [self removeAllObservers];
-            ZLSongModel *song = [[ZLPlayingQueueManager sharedQueueManager] getSongById:songId];
-            if (song) {
-                _curPlayingSong = song;
-                _isPlaying = true;
-                _curPlayingTime = 0;
-                _curLoadingScale = 0;
-                NSURL *remoteUrl = [[ZLDownLoadManager sharedDownLoad] getDownLoadedUrl:song];
-//                AVPlayerItem *item = [[AVPlayerItem alloc] initWithURL:song.songUrl];
-                AVPlayerItem *item = [AVPlayerItem mc_playerItemWithRemoteURL:remoteUrl error:nil];
-                if (self.player) {
-                    [self.player replaceCurrentItemWithPlayerItem:item];
-                } else {
-                    self.player = [[AVPlayer alloc] initWithPlayerItem:item];
-                }
-                [self.player play];
-                
-                [self addNSNotificationForPlayMusicFinish];
-                [self addPlayStatus];
-                [self addPlayLoadTime];
-                [self addMusicProgressWithItem:item];
-            }
+            [self doPlaySong:song];
         }
     } else { //首次开始播放的歌曲
-        ZLSongModel *song = [[ZLPlayingQueueManager sharedQueueManager] getSongById:songId];
-        if (song) {
-            _curPlayingSong = song;
-            _isPlaying = true;
-            _curPlayingTime = 0;
-            _curLoadingScale = 0;
-            
-            NSURL *remoteUrl = [[ZLDownLoadManager sharedDownLoad] getDownLoadedUrl:song];
-//            AVPlayerItem *item = [[AVPlayerItem alloc] initWithURL:song.songUrl];
-            AVPlayerItem *item = [AVPlayerItem mc_playerItemWithRemoteURL:remoteUrl error:nil];
-            _player = [[AVPlayer alloc] initWithPlayerItem:item];
-            [_player play];
-            
-            
-            [self addNSNotificationForPlayMusicFinish];
-            [self addPlayStatus];
-            [self addPlayLoadTime];
-            [self addMusicProgressWithItem:item];
-        }
+        [self doPlaySong:song];
     }
     [[NSNotificationCenter defaultCenter] postNotificationName:Notif_SongStatusChanged object:nil];
+}
+
+/**
+ 真正播放歌曲
+
+ @param song 歌曲
+ */
+- (void)doPlaySong:(ZLSongModel *)song {
+    [self removeAllObservers];
+    
+    _curPlayingSong = song;
+    _isPlaying = true;
+    _curPlayingTime = 0;
+    _curLoadingScale = 0;
+    NSURL *remoteUrl = [[ZLDownLoadManager sharedDownLoad] getDownLoadedUrl:song];
+    //                AVPlayerItem *item = [[AVPlayerItem alloc] initWithURL:song.songUrl];
+    AVPlayerItem *item = [AVPlayerItem mc_playerItemWithRemoteURL:remoteUrl error:nil];
+    if (self.player) {
+        [self.player replaceCurrentItemWithPlayerItem:item];
+    } else {
+        self.player = [[AVPlayer alloc] initWithPlayerItem:item];
+    }
+    [self.player play];
+    
+    [self addNSNotificationForPlayMusicFinish];
+    [self addPlayStatus];
+    [self addPlayLoadTime];
+    [self addMusicProgressWithItem:item];
 }
 
 //暂停播放 或者 单曲循环播放
@@ -147,16 +133,6 @@
      [[NSNotificationCenter defaultCenter] postNotificationName:Notif_SongStatusChanged object:nil];
 }
 
-
-
-- (void)playAll {
-//    NSArray *allSongs = [[ZLPlayingQueueManager sharedQueueManager] getSongList];
-//    for (int index = 0 ; index < allSongs.count; index ++) {
-////        ZLSongModel *song = [allSongs objectAtIndex:index];
-////        NSTimeInterval duration = song.duration.doubleValue;
-//        
-//    }
-}
 
 - (void)removeAllObservers {
     [self removePlayStatus];
@@ -203,12 +179,12 @@
  */
 - (void)playFinished:(NSNotification*)notification {
     self.isPlaying = false;
-    NSString *nextId = [[ZLPlayingQueueManager sharedQueueManager] getNextSongId];
+    ZLSongModel *nextSong = [[ZLPlayingQueueManager sharedQueueManager] getNextSong];
     if ([[ZLPlayingQueueManager sharedQueueManager] isLoopOrder]) {
-        nextId = self.curPlayingSong.songId;
+        nextSong = self.curPlayingSong;
         [self.player seekToTime:CMTimeMake(0, 1)];
     }
-    [self playSong:nextId loadProgress:self.loadingProgressBlock playProgress:self.playingProgressBlock];
+    [self playSong:nextSong loadProgress:self.loadingProgressBlock playProgress:self.playingProgressBlock];
     [[NSNotificationCenter defaultCenter] postNotificationName:Notif_SwitchSong object:nil];
 }
 
@@ -316,20 +292,15 @@
 }
 
 - (void)playPreSong {
-    NSString *preId = [[ZLPlayingQueueManager sharedQueueManager] getPreSongId];
-    [self playSong:preId loadProgress:self.loadingProgressBlock playProgress:self.playingProgressBlock];
+    ZLSongModel *preSong = [[ZLPlayingQueueManager sharedQueueManager] getPreSong];
+    [self playSong:preSong loadProgress:self.loadingProgressBlock playProgress:self.playingProgressBlock];
     [[NSNotificationCenter defaultCenter] postNotificationName:Notif_SwitchSong object:nil];
 }
 
 - (void)playNextSong{
-    NSString *nextId = [[ZLPlayingQueueManager sharedQueueManager] getNextSongId];
-    [self playSong:nextId loadProgress:self.loadingProgressBlock playProgress:self.playingProgressBlock];
+    ZLSongModel *nextSong = [[ZLPlayingQueueManager sharedQueueManager] getNextSong];
+    [self playSong:nextSong loadProgress:self.loadingProgressBlock playProgress:self.playingProgressBlock];
     [[NSNotificationCenter defaultCenter] postNotificationName:Notif_SwitchSong object:nil];
 }
 
-- (void)saveCurSong {
-//    if (self.curPlayingSong) {
-//        [[NSUserDefaults standardUserDefaults] setObject:self.curPlayingSong.songId forKey:@"CurrentSong"];
-//    }
-}
 @end

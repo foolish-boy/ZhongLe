@@ -42,8 +42,6 @@ static const int animationViewHeight = 20;
         [self.contentView addSubview:self.animationView];
         [self hideAnimationView];
         
-        UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressAction:)];
-//        [self addGestureRecognizer:longPress];
     }
     return self;
 }
@@ -51,11 +49,7 @@ static const int animationViewHeight = 20;
 - (void)setWithSongModel:(ZLSongModel *)model rowIndex:(int)index {
     self.lbIndex.text    = [NSString stringWithFormat:@"%d",index];
     self.lbSongName.text = model.songName;
-//    if ([[ZLNetworkTask sharedTask] hasDownLoaded:model.songUrl]) {
-//        self.lbSongName.text = [NSString stringWithFormat:@"%@(已下载)", model.songName];
-//    }
     self.lbSinger.text   = model.singer;
-    self.curModel        = model;
     
     [self.imgCover sd_setImageWithURL:[NSURL URLWithString:model.albumUrl] placeholderImage:nil];
     
@@ -101,11 +95,6 @@ static const int animationViewHeight = 20;
     }];
 
     [self setNeedsLayout];
-}
-
-
-- (void)longPressAction:(UILongPressGestureRecognizer *)ges {
-    [[NSNotificationCenter defaultCenter] postNotificationName:Notif_LongPressSongListCell object:self.curModel];
 }
 
 

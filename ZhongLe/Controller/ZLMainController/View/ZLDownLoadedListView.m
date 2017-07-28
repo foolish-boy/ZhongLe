@@ -7,12 +7,12 @@
 //
 
 #import "ZLDownLoadedListView.h"
-#import "ZLPlayingQueueManager.h"
 #import "ZLPlayingManager.h"
 #import "ZLSongModel.h"
 #import "ZLSongListCell.h"
 #import "ZLDefine.h"
 #import "ZLDownLoadManager.h"
+#import "ZLPlayingQueueManager.h"
 
 @implementation ZLDownLoadedListView
 
@@ -29,7 +29,7 @@
 
 #pragma mark - UITableViewDataSource
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [[ZLPlayingQueueManager sharedQueueManager] getDownLoadedSongList].count;
+    return [[ZLDownLoadManager sharedDownLoad] getDownLoadedSongList].count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -38,15 +38,15 @@
     if (!cell) {
         cell = [[ZLSongListCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
     }
-    id data = [[[ZLPlayingQueueManager sharedQueueManager] getDownLoadedSongList] objectAtIndex:indexPath.row];
+    id data = [[[ZLDownLoadManager sharedDownLoad] getDownLoadedSongList] objectAtIndex:indexPath.row];
     if ([data isKindOfClass:[ZLSongModel class]]) {
         [cell setWithSongModel:data rowIndex:indexPath.row+1];
     }
     
     //检测当前cell是否是播放的音乐cell 处理UI
-    NSString *songId = [[ZLPlayingQueueManager sharedQueueManager] downLoadedSongIdAtIndex:indexPath.row];
+    ZLSongModel *song = [[ZLDownLoadManager sharedDownLoad] songOfIndex:indexPath.row];
     ZLSongModel *playingSong =  [ZLPlayingManager sharedPlayingManager].curPlayingSong;
-    if ([playingSong.songId isEqualToString:songId]) {
+    if ([playingSong.songId isEqualToString:song.songId]) {
         [cell showAnimationView];
         if ([ZLPlayingManager sharedPlayingManager].isPlaying) {
             [cell startPlayingAnimation];
@@ -68,10 +68,11 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
-    id data = [[[ZLPlayingQueueManager sharedQueueManager] getDownLoadedSongList] objectAtIndex:indexPath.row];
+    id data = [[[ZLDownLoadManager sharedDownLoad] getDownLoadedSongList] objectAtIndex:indexPath.row];
     if ([data isKindOfClass:[ZLSongModel class]]) {
         ZLSongModel *song = data;
-        [[NSNotificationCenter defaultCenter] postNotificationName:Notif_DidSelectSong object:song.songId];
+        [ZLPlayingQueueManager sharedQueueManager].dataSource = SongDataSourceDownload;
+        [[NSNotificationCenter defaultCenter] postNotificationName:Notif_DidSelectSong object:song];
     }
 }
 
@@ -88,10 +89,9 @@
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
-        ZLSongListCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-        ZLSongModel *model = cell.curModel;
+        ZLSongModel *model = [[ZLDownLoadManager sharedDownLoad] songOfIndex:indexPath.row];
         if (model) {
-            [[ZLDownLoadManager sharedDownLoad] removeSong:model.songId];
+            [[ZLDownLoadManager sharedDownLoad] removeSong:model];
         }
         [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
     }

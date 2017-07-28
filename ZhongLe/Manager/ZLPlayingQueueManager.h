@@ -18,51 +18,19 @@ typedef enum : NSUInteger{
     PlayingOrderNum
 } PlayingOrderType;
 
+//数据来源 用来配置循环播放列表
+typedef enum : NSUInteger {
+    SongDataSourceAll = 0,//曲库
+    SongDataSourceDownload
+} SongDataSource;
 
 @interface ZLPlayingQueueManager : NSObject
 
 + (ZLPlayingQueueManager *)sharedQueueManager;
 
+@property (nonatomic, assign) SongDataSource dataSource;
+
 #pragma mark - 曲库歌曲缓存
-
-/**
- 添加歌曲 存入内存中
-
- @param song 歌曲model
- */
-- (void)addSong:(ZLSongModel *)song;
-
-
-/**
- 批量添加歌曲
-
- @param songArr 歌曲数组
- */
-- (void)addSongs:(NSArray *)songArr;
-
-
-/**
- 送缓存中删除歌曲
-
- @param songId 歌曲ID
- */
-- (void)removeSong:(NSString *)songId;
-
-
-/**
- 清空缓存所有歌曲
- */
-- (void)clearSongs;
-
-
-/**
- 根据歌曲ID获取歌曲信息
-
- @param songId 歌曲ID
- @return 歌曲Model
- */
-- (ZLSongModel*)getSongById:(NSString *)songId;
-
 
 /**
  返回所有曲库中的歌曲
@@ -73,20 +41,20 @@ typedef enum : NSUInteger{
 
 
 /**
- songId对应的歌曲在曲库中的位置索引
+ 对应的歌曲在播放列表的位置索引 用来定位上一首 下一首
 
- @param songId 歌曲ID
+ @param song 歌曲
  @return 位置
  */
-- (int)indexOfSong:(NSString *)songId;
+- (int)indexOfSong:(ZLSongModel *)song;
 
 /**
- 返回曲库中特定位置的歌曲ID
+ 获取指定位置的歌曲
 
  @param index 位置
- @return 歌曲ID
+ @return 歌曲
  */
-- (NSString *)songIdAtIndex:(NSUInteger)index;
+- (ZLSongModel *)songOfIndex:(int)index;
 
 /**
  加载所有的曲库歌曲
@@ -95,18 +63,18 @@ typedef enum : NSUInteger{
 
 
 /**
- 获得上一首歌的ID
+ 获得上一首歌的
 
- @return 上一首歌的ID
+ @return 上一首歌
  */
-- (NSString *)getPreSongId;
+- (ZLSongModel *)getPreSong;
 
 /**
- 获得下一首歌的ID
+ 获得下一首歌
  
- @return 下一首歌的ID
+ @return 下一首歌
  */
-- (NSString *)getNextSongId;
+- (ZLSongModel *)getNextSong;
 
 #pragma mark - 播放顺序控制
 
@@ -134,21 +102,4 @@ typedef enum : NSUInteger{
  */
 - (void)savePlayOrder;
 
-
-#pragma mark - 下载歌曲缓存
-
-/**
- 获得所有下载的歌曲
-
- @return 下载的歌曲列表
- */
-- (NSArray *)getDownLoadedSongList;
-
-/**
- 获得下载歌曲列表中指定位置的歌曲ID
-
- @param index 索引
- @return 歌曲ID
- */
-- (NSString *)downLoadedSongIdAtIndex:(NSUInteger)index;
 @end

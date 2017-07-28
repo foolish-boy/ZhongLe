@@ -91,25 +91,25 @@ typedef enum : NSUInteger {
 - (void)tapOnStatusView {
     ZLSongModel *curSong = [ZLPlayingManager sharedPlayingManager].curPlayingSong;
     if (curSong) {
-        [self gotoInfoView:curSong.songId playImmediately:YES];
+        [self gotoInfoView:curSong playImmediately:YES];
     }
 }
 
 
 #pragma mark - notification
 - (void)detectSelectSong:(NSNotification *)notif {
-    NSString *songId = notif.object;
-    [self gotoInfoView:songId playImmediately:YES];
+    ZLSongModel *song = notif.object;
+    [self gotoInfoView:song playImmediately:YES];
 }
 
-- (void)gotoInfoView:(NSString *)songId playImmediately:(BOOL)immediately {
-    if (!songId) {
+- (void)gotoInfoView:(ZLSongModel *)song playImmediately:(BOOL)immediately {
+    if (!song) {
         return;
     }
     ZLPlayingViewController *playingCtr = [ZLPlayingViewController new];
     
     if (immediately) {
-        [[ZLPlayingManager sharedPlayingManager] playSong:songId loadProgress:^(float loadProgress) {
+        [[ZLPlayingManager sharedPlayingManager] playSong:song loadProgress:^(float loadProgress) {
             [playingCtr loadingProgress:loadProgress];
         } playProgress:^(float curPlayTime) {
             [playingCtr playingProgress:curPlayTime];

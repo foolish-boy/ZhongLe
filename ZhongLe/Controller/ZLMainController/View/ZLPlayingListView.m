@@ -48,9 +48,9 @@
     }
     
     //检测当前cell是否是播放的音乐cell 处理UI
-    NSString *songId = [[ZLPlayingQueueManager sharedQueueManager] songIdAtIndex:indexPath.row];
+    ZLSongModel *song = [[ZLPlayingQueueManager sharedQueueManager] songOfIndex:indexPath.row];
     ZLSongModel *playingSong =  [ZLPlayingManager sharedPlayingManager].curPlayingSong;
-    if ([playingSong.songId isEqualToString:songId]) {
+    if ([playingSong.songId isEqualToString:song.songId]) {
         [cell showAnimationView];
         if ([ZLPlayingManager sharedPlayingManager].isPlaying) {
             [cell startPlayingAnimation];
@@ -78,7 +78,8 @@
             [[ZLDownLoadManager sharedDownLoad] addToDownLoadQueue:song];
         } else {
             [tableView deselectRowAtIndexPath:indexPath animated:NO];
-            [[NSNotificationCenter defaultCenter] postNotificationName:Notif_DidSelectSong object:song.songId];
+            [ZLPlayingQueueManager sharedQueueManager].dataSource = SongDataSourceAll;
+            [[NSNotificationCenter defaultCenter] postNotificationName:Notif_DidSelectSong object:song];
         }
     }
 }
@@ -110,8 +111,5 @@
 }
 
 
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-
-}
 
 @end

@@ -9,6 +9,7 @@
 #import "AppDelegate.h"
 #import "ZLMainViewController.h"
 #import "ZLPlayingQueueManager.h"
+#import "ZLDownLoadManager.h"
 #import "ZLPlayingManager.h"
 #import <AVFoundation/AVFoundation.h>
 
@@ -37,6 +38,7 @@
     [session setActive:YES error:nil];
     
     [[ZLPlayingQueueManager sharedQueueManager] loadAllSongsFromPlist];
+    [[ZLDownLoadManager sharedDownLoad] loadDownLoadedSongs];
     return YES;
 }
 
@@ -51,7 +53,6 @@
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     [[ZLPlayingQueueManager sharedQueueManager] savePlayOrder];
-    [[ZLPlayingManager sharedPlayingManager] saveCurSong];
 }
 
 
@@ -69,7 +70,6 @@
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     [[ZLPlayingQueueManager sharedQueueManager] savePlayOrder];
     [[ZLPlayingManager sharedPlayingManager] stop];
-    [[ZLPlayingManager sharedPlayingManager] saveCurSong];
 }
 
 

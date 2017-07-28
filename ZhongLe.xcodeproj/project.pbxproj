@@ -96,6 +96,7 @@
 		BFCA7EB91F274B2200497F15 /* ZLDownLoadedListView.m in Sources */ = {isa = PBXBuildFile; fileRef = BFCA7EB81F274B2200497F15 /* ZLDownLoadedListView.m */; };
 		BFCA7EBC1F274D0700497F15 /* ZLAllSongViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BFCA7EBB1F274D0700497F15 /* ZLAllSongViewController.m */; };
 		BFCA7EBF1F286BCB00497F15 /* ZLDownLoadManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BFCA7EBE1F286BCB00497F15 /* ZLDownLoadManager.m */; };
+		BFCA7EC41F2BA0EB00497F15 /* ZLBaseListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BFCA7EC31F2BA0EB00497F15 /* ZLBaseListViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -266,6 +267,8 @@
 		BFCA7EBB1F274D0700497F15 /* ZLAllSongViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ZLAllSongViewController.m; path = View/ZLAllSongViewController.m; sourceTree = "<group>"; };
 		BFCA7EBD1F286BCB00497F15 /* ZLDownLoadManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZLDownLoadManager.h; sourceTree = "<group>"; };
 		BFCA7EBE1F286BCB00497F15 /* ZLDownLoadManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZLDownLoadManager.m; sourceTree = "<group>"; };
+		BFCA7EC21F2BA0EB00497F15 /* ZLBaseListViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZLBaseListViewController.h; sourceTree = "<group>"; };
+		BFCA7EC31F2BA0EB00497F15 /* ZLBaseListViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZLBaseListViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -335,6 +338,8 @@
 				BFB05B141F15F87F000D5D95 /* View */,
 				BFC998F91F0F8EF3008F207F /* ZLMainViewController.h */,
 				BFC998FA1F0F8EF3008F207F /* ZLMainViewController.m */,
+				BFCA7EC21F2BA0EB00497F15 /* ZLBaseListViewController.h */,
+				BFCA7EC31F2BA0EB00497F15 /* ZLBaseListViewController.m */,
 				BFCA7EBA1F274D0700497F15 /* ZLAllSongViewController.h */,
 				BFCA7EBB1F274D0700497F15 /* ZLAllSongViewController.m */,
 				BFCA7EB41F274ADF00497F15 /* ZLDownLoadedViewController.h */,
@@ -798,6 +803,7 @@
 				BFB05BE21F163B4E000D5D95 /* UIImageEX.m in Sources */,
 				BFC9990E1F0F9076008F207F /* ZLPlayingManager.m in Sources */,
 				BFCA7EBC1F274D0700497F15 /* ZLAllSongViewController.m in Sources */,
+				BFCA7EC41F2BA0EB00497F15 /* ZLBaseListViewController.m in Sources */,
 				BFC998F51F0F8EF3008F207F /* main.m in Sources */,
 				BFB05B961F1619DF000D5D95 /* UIImage+MultiFormat.m in Sources */,
 				BFB05C041F17C508000D5D95 /* MarqueeLabel.m in Sources */,

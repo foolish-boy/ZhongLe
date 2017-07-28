@@ -14,8 +14,6 @@
 
 @interface ZLSongListCell : UITableViewCell
 
-@property (nonatomic, strong) ZLSongModel *curModel;
-
 - (void)setWithSongModel:(ZLSongModel *)model rowIndex:(int)index;
 
 - (void)showAnimationView;

@@ -15,6 +15,7 @@
 
 @property (nonatomic, strong) NSString *storePath;
 @property (nonatomic, strong) NSMutableArray *downLoadQueue;
+@property (nonatomic, strong) NSMutableArray *downLoadSongs;
 
 @end
 
@@ -34,6 +35,7 @@
     self = [super init];
     if (self) {
         _downLoadQueue = [NSMutableArray new];
+        _downLoadSongs = [NSMutableArray new];
         NSString *filePath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
         _storePath = [filePath stringByAppendingPathComponent:STORE_DIRECTORY];
         if (![[NSFileManager defaultManager] fileExistsAtPath:_storePath])
@@ -56,43 +58,45 @@
 }
 - (void)downLoadAll {
     for (ZLSongModel *song in self.downLoadQueue) {
-        [self downLoadTask:song];
+        [self startDownLoad:song];
     }
 }
 
 
-- (void)downLoadTask:(ZLSongModel *)requestSong {
+- (void)startDownLoad:(ZLSongModel *)requestSong {
     if (!requestSong) {
         return;
     }
     
     NSURLRequest *request = [NSURLRequest requestWithURL:requestSong.songUrl];
     NSURLSession *session = [NSURLSession sharedSession];
-    NSURLSessionDownloadTask *task = [session downloadTaskWithRequest:request
-                                                    completionHandler:^(NSURL * _Nullable location, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-                                                        if (!error) {
-                                                            
-                                                            NSLog(@"%@",location.path);
-                                                            NSError *fileError;
-                                                            //                                                            NSString *path = [[self.storePath stringByAppendingPathComponent:[[requestUrl absoluteString] mc_md5]] stringByAppendingPathExtension:[requestUrl pathExtension]];
-                                                            NSString *mp3Path = [[self.storePath stringByAppendingPathComponent:requestSong.songId] stringByAppendingPathExtension:[requestSong.songUrl pathExtension]];
-                                                            NSString *infoPath = [[self.storePath stringByAppendingPathComponent:requestSong.songId] stringByAppendingPathExtension:@"info"];
-                                                            
-                                                            [[NSFileManager defaultManager] copyItemAtPath:location.path toPath:mp3Path error:&fileError];
-                                                            if (fileError) {
-                                                                NSLog(@"save failed");
-                                                                [[NSNotificationCenter defaultCenter] postNotificationName:Notif_DownLoadSongFail object:nil];
-                                                            } else {
-                                                                NSLog(@"save success");
-                                                                [NSKeyedArchiver archiveRootObject:requestSong toFile:infoPath];
-                                                                [[NSNotificationCenter defaultCenter] postNotificationName:Notif_DownLoadSongSuccess object:nil];
-                                                                
-                                                                if ([self.downLoadQueue containsObject:requestSong]) {
-                                                                    [self.downLoadQueue removeObject:requestSong];
-                                                                }
-                                                            }
-                                                        }
-                                                    }];
+    NSURLSessionDownloadTask *task =
+        [session downloadTaskWithRequest:request
+                       completionHandler:^(NSURL * _Nullable location, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+                           if (!error) {
+                            //下载的歌曲 存入../Library/Cacahes/DownLoads/
+                            //每首歌曲对应两个文件 songId.mp3  songId.info
+                            //分别是mp3资源文件和ZLSongModel序列化信息
+                            NSError *fileError;
+                            
+                            [[NSFileManager defaultManager] copyItemAtPath:location.path
+                                                                    toPath:[self getMP3Path:requestSong.songId] error:&fileError];
+                            if (fileError) {
+                                NSLog(@"save failed");
+                                [[NSNotificationCenter defaultCenter] postNotificationName:Notif_DownLoadSongFail object:nil];
+                            } else {
+                                NSLog(@"save success");
+                                [NSKeyedArchiver archiveRootObject:requestSong toFile:[self getInfoPath:requestSong.songId]];
+                                [self addSong:requestSong];
+                                
+                                [[NSNotificationCenter defaultCenter] postNotificationName:Notif_DownLoadSongSuccess object:nil];
+                                
+                                if ([self.downLoadQueue containsObject:requestSong]) {
+                                    [self.downLoadQueue removeObject:requestSong];
+                                }
+                            }
+                        }
+        }];
     [task resume];
 }
 
@@ -101,9 +105,7 @@
     if (!requestSong) {
         return NO;
     }
-    NSURL *requestUrl = requestSong.songUrl;
-    NSString *path = [[self.storePath stringByAppendingPathComponent:requestSong.songId] stringByAppendingPathExtension:[requestUrl pathExtension]];
-    if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
+    if ([[NSFileManager defaultManager] fileExistsAtPath:[self getMP3Path:requestSong.songId]]) {
         return true;
     }
     return false;
@@ -113,52 +115,76 @@
     if (!requestSong) {
         return nil;
     }
-    NSURL *requestUrl = requestSong.songUrl;
     if ([self hasDownLoaded:requestSong]) {
-        NSString *path = [[self.storePath stringByAppendingPathComponent:requestSong.songId] stringByAppendingPathExtension:[requestUrl pathExtension]];
-        return [[NSURL alloc] initFileURLWithPath:path];//不能用URLWithString
+        return [[NSURL alloc] initFileURLWithPath:[self getMP3Path:requestSong.songId]];//不能用URLWithString
     }
-    return requestUrl;
+    return requestSong.songUrl;
 }
 
-- (NSArray *)getDownLoadedSongIdList {
-    NSMutableArray *songIdList = [[NSMutableArray alloc] init];
+- (void)loadDownLoadedSongs {
     NSArray *fileList = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:self.storePath error:nil];
     for (NSString *file in fileList) {
-        if ([file hasSuffix:@".mp3"]) {
-            NSArray *arr = [file componentsSeparatedByString:@"."];
-            if (arr.count == 2) {
-                NSString *songId = arr[0];
-                [songIdList addObject:songId];
+        if ([file hasSuffix:@"mp3"]) {
+            NSString *infoFile = [file stringByReplacingOccurrencesOfString:@"mp3" withString:@"info"];
+            NSString *infoPath = [self.storePath stringByAppendingPathComponent:infoFile];
+            if ([[NSFileManager defaultManager] fileExistsAtPath:infoPath]) {
+                ZLSongModel *model = [NSKeyedUnarchiver unarchiveObjectWithFile:infoPath];
+                [self.downLoadSongs addObject:model];
             }
         }
     }
-    return songIdList;
+}
+
+- (NSArray *)getDownLoadedSongList {
+    return self.downLoadSongs;
 }
 
 
-- (void)removeSong:(NSString *)songId {
-    if (!songId) {
+- (void)removeSong:(ZLSongModel *)song {
+    if (!song) {
         return;
     }
-    NSString *mp3Path = [[self.storePath stringByAppendingPathComponent:songId] stringByAppendingPathExtension:@"mp3"];
-    NSString *infoPath = [[self.storePath stringByAppendingPathComponent:songId] stringByAppendingPathExtension:@"info"];
     
-    if ([[NSFileManager defaultManager] fileExistsAtPath:mp3Path]) {
-        [[NSFileManager defaultManager] removeItemAtPath:mp3Path error:nil];
+    if ([[NSFileManager defaultManager] fileExistsAtPath:[self getMP3Path:song.songId]]) {
+        [[NSFileManager defaultManager] removeItemAtPath:[self getMP3Path:song.songId] error:nil];
     }
     
-    if ([[NSFileManager defaultManager] fileExistsAtPath:infoPath]) {
-        [[NSFileManager defaultManager] removeItemAtPath:infoPath error:nil];
+    if ([[NSFileManager defaultManager] fileExistsAtPath:[self getInfoPath:song.songId]]) {
+        [[NSFileManager defaultManager] removeItemAtPath:[self getInfoPath:song.songId] error:nil];
+    }
+    if ([self.downLoadSongs containsObject:song]) {
+        [self.downLoadSongs removeObject:song];
     }
 }
 
 - (void)clearSongs {
-    NSArray *list = [self getDownLoadedSongIdList];
-    for (NSString *songId in list) {
-        [self removeSong:songId];
+    NSArray *list = [NSArray arrayWithArray:[self getDownLoadedSongList]];
+    for (ZLSongModel *song in list) {
+        [self removeSong:song];
     }
 }
 
+- (ZLSongModel *)songOfIndex:(int)index {
+    if (index >= 0 && index < self.downLoadSongs.count) {
+        return [self.downLoadSongs objectAtIndex:index];
+    }
+    return nil;
+}
+
+#pragma mark - private methods
+- (NSString *)getMP3Path:(NSString *)songId {
+    return [[self.storePath stringByAppendingPathComponent:songId] stringByAppendingPathExtension:@"mp3"];
+}
+
+- (NSString *)getInfoPath:(NSString *)songId {
+    return [[self.storePath stringByAppendingPathComponent:songId] stringByAppendingPathExtension:@"info"];
+
+}
+
+- (void)addSong:(ZLSongModel *)song {
+    if (song && ![self.downLoadSongs containsObject:song]) {
+        [self.downLoadSongs addObject:song];
+    }
+}
 
 @end

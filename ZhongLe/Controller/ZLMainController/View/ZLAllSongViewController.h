@@ -7,13 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "ZLBaseListViewController.h"
 
+@interface ZLAllSongViewController : ZLBaseListViewController
 
-@interface ZLAllSongViewController : UIViewController
-
-- (void)refreshView;
-- (void)layoutView;
-- (void)beginEdit;
-- (void)endEdit;
 
 @end
