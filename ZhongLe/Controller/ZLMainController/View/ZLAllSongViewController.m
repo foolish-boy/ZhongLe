@@ -30,11 +30,21 @@
         [self.view addSubview:_playingListView];
         
         super.listView = _playingListView;
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(detectSpiderSongsSuccess) name:Notif_SpiderSongsSuccess object:nil];
     }
     return self;
 }
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
+}
+
+- (void)detectSpiderSongsSuccess {
+    [self.listView reloadData];
 }
 
 

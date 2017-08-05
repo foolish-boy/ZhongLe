@@ -11,4 +11,5 @@
 @interface NSString (EX)
 
 - (NSString *)mc_md5;
+- (NSDictionary *)dictionaryWithJsonString;
 @end

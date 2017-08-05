@@ -61,6 +61,12 @@ typedef enum : NSUInteger {
  */
 - (void)loadAllSongsFromPlist;
 
+/**
+ 添加歌曲
+
+ @param songs 歌曲
+ */
+- (void)addSongs:(NSArray *)songs;
 
 /**
  获得上一首歌的

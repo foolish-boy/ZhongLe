@@ -11,6 +11,7 @@
 #import "ZLPlayingQueueManager.h"
 #import "ZLDownLoadManager.h"
 #import "ZLPlayingManager.h"
+#import "ZLSpiderManager.h"
 #import <AVFoundation/AVFoundation.h>
 
 @interface AppDelegate ()
@@ -37,7 +38,9 @@
     //激活音频会话。
     [session setActive:YES error:nil];
     
-    [[ZLPlayingQueueManager sharedQueueManager] loadAllSongsFromPlist];
+    
+    [ZLSpiderManager sharedSpider];
+//    [[ZLPlayingQueueManager sharedQueueManager] loadAllSongsFromPlist];
     [[ZLDownLoadManager sharedDownLoad] loadDownLoadedSongs];
     return YES;
 }

@@ -70,6 +70,14 @@
     return _dataSource;
 }
 
+- (void)addSongs:(NSArray *)songs {
+    for (id song in songs) {
+        if ([song isKindOfClass:[ZLSongModel class]]) {
+            [self.allSongList addObject:song];
+        }
+    }
+}
+
 - (void)loadAllSongsFromPlist {
     NSString *plistPath = [[NSBundle mainBundle] pathForResource:@"DemoSongs" ofType:@"plist"];
     NSArray *songsLit = [[NSMutableArray alloc] initWithContentsOfFile:plistPath];

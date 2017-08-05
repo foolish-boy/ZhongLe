@@ -45,6 +45,7 @@
 #define Notif_LongPressSongListCell     @"Notif_LongPressSongListCell"
 #define Notif_DownLoadSongSuccess       @"Notif_DownLoadSongSuccess"
 #define Notif_DownLoadSongFail          @"Notif_DownLoadSongFail"
+#define Notif_SpiderSongsSuccess        @"Notif_SpiderSongsSuccess"
 
 #define STORE_DIRECTORY  @"DownLoads/"
 
